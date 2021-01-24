@@ -38,15 +38,17 @@ import soundfile as sf
 from univoc import Vocoder
 from tacotron import load_cmudict, text_to_id, Tacotron
 
-# download pretrained weights for the vocoder (and optionally move to GPU)
-vocoder = Vocoder.from_pretrained(
-    "https://github.com/bshall/UniversalVocoding/releases/download/v0.2/univoc-ljspeech-7mtpaq.pt"
-).cuda()
+# use 'cpu' if cuda not available
+device = 'cuda'
+map_location = torch.device(device)
 
-# download pretrained weights for tacotron (and optionally move to GPU)
-tacotron = Tacotron.from_pretrained(
-    "https://github.com/bshall/Tacotron/releases/download/v0.1/tacotron-ljspeech-yspjx3.pt"
-).cuda()
+# download pretrained weights for the vocoder
+url = "https://github.com/bshall/UniversalVocoding/releases/download/v0.2/univoc-ljspeech-7mtpaq.pt"
+vocoder = Vocoder.from_pretrained(url, map_location)
+
+# download pretrained weights for tacotron
+url = "https://github.com/bshall/Tacotron/releases/download/v0.1/tacotron-ljspeech-yspjx3.pt"
+tacotron = Tacotron.from_pretrained(url, map_location)
 
 # load cmudict and add pronunciation of PyTorch
 cmudict = load_cmudict()
@@ -55,7 +57,9 @@ cmudict["PYTORCH"] = "P AY1 T AO2 R CH"
 text = "A PyTorch implementation of Location-Relative Attention Mechanisms For Robust Long-Form Speech Synthesis."
 
 # convert text to phone ids
-x = torch.LongTensor(text_to_id(text, cmudict)).unsqueeze(0).cuda()
+x = torch.LongTensor(text_to_id(text, cmudict)).unsqueeze(0)
+if ( device == 'cuda '):
+    x = x.cuda()
 
 # synthesize audio
 with torch.no_grad():
